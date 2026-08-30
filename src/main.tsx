@@ -15,6 +15,7 @@ import "./budget-operations.css";
 import "./finance-enhancements.css";
 import "./budget-live.css";
 import "./operations-live.css";
+import "./home-live.css";
 import "./auth-overrides.css";
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
