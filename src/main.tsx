@@ -21,40 +21,19 @@ import "./auth-overrides.css";
 import "./kokode-reporting.css";
 import "./kokode-reporting-status.css";
 
-const buildTimeAuthPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
-const authConfigSupabaseUrl = (
-  import.meta.env.VITE_SUPABASE_URL?.trim() ||
-  "https://kcmmpjyngcysdfbumchk.supabase.co"
-).replace(/\/+$/, "");
+const authPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
+const configuredBasePath = __HF_BASE_PATH__ === "/" ? "" : __HF_BASE_PATH__.replace(/\/$/, "");
+const appPath = (path: string) => `${configuredBasePath}${path.startsWith("/") ? path : `/${path}`}` || "/";
+const relativePathname = () => {
+  const pathname = window.location.pathname;
+  if (!configuredBasePath) return pathname;
+  const stripped = pathname.startsWith(configuredBasePath) ? pathname.slice(configuredBasePath.length) : pathname;
+  return stripped || "/";
+};
 const AUTH_LOAD_TIMEOUT_MS = 8_000;
 
 function isClerkPublishableKey(value: unknown): value is string {
   return typeof value === "string" && /^pk_(test|live)_[A-Za-z0-9._-]+$/.test(value.trim());
-}
-
-async function loadAuthPublicKey(): Promise<string> {
-  if (isClerkPublishableKey(buildTimeAuthPublicKey)) return buildTimeAuthPublicKey;
-
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), AUTH_LOAD_TIMEOUT_MS);
-  try {
-    const response = await fetch(
-      `${authConfigSupabaseUrl}/functions/v1/get-hoiku-finance-clerk-public-key`,
-      {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-        signal: controller.signal,
-      },
-    );
-
-    if (!response.ok) throw new Error(`auth-config:${response.status}`);
-    const payload = await response.json() as { publishableKey?: unknown };
-    if (!isClerkPublishableKey(payload.publishableKey)) throw new Error("auth-config:invalid-key");
-    return payload.publishableKey.trim();
-  } finally {
-    window.clearTimeout(timer);
-  }
 }
 
 function AppLoader({
@@ -85,9 +64,7 @@ function AuthConnectionError() {
       <img src={financeMark} alt="" />
       <h1>ログインの準備に時間がかかっています</h1>
       <p>認証サーバーへ接続できませんでした。通信状況を確認して、もう一度お試しください。</p>
-      <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>
-        もう一度試す
-      </button>
+      <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>もう一度試す</button>
     </main>
   );
 }
@@ -103,12 +80,8 @@ function AuthenticatedFinance() {
     return () => setSupabaseAccessTokenGetter(null);
   }, [getToken, isLoaded]);
 
-  if (!isLoaded || !tokenReady) {
-    return <AppLoader label="アカウントを確認しています" />;
-  }
-  if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
-    return <Navigate to="/" replace />;
-  }
+  if (!isLoaded || !tokenReady) return <AppLoader label="アカウントを確認しています" />;
+  if (["/login", "/signup"].includes(relativePathname())) return <Navigate to="/" replace />;
 
   return (
     <FinanceSessionProvider>
@@ -133,57 +106,18 @@ function AuthGate() {
   }, [isLoaded]);
 
   if (!isLoaded) {
-    return timedOut
-      ? <AuthConnectionError />
-      : <AppLoader label="認証状態を確認しています" detail="通常は数秒で完了します" />;
+    return timedOut ? <AuthConnectionError /> : <AppLoader label="認証状態を確認しています" detail="通常は数秒で完了します" />;
   }
   return isSignedIn ? <AuthenticatedFinance /> : <LoginPage />;
 }
 
 function Root() {
-  const [authPublicKey, setAuthPublicKey] = useState<string | null>(null);
-  const [loadingAuthConfig, setLoadingAuthConfig] = useState(true);
-  const [authConfigError, setAuthConfigError] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoadingAuthConfig(true);
-    setAuthConfigError(false);
-
-    void loadAuthPublicKey()
-      .then((key) => {
-        if (!cancelled) setAuthPublicKey(key);
-      })
-      .catch((error) => {
-        console.error("[hf-auth-config]", error);
-        if (!cancelled) {
-          setAuthPublicKey(null);
-          setAuthConfigError(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingAuthConfig(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [retryKey]);
-
-  if (loadingAuthConfig) {
-    return <AppLoader label="ログインを準備しています" detail="認証情報を安全に読み込んでいます" />;
-  }
-
-  if (!authPublicKey || authConfigError) {
+  if (!isClerkPublishableKey(authPublicKey)) {
     return (
       <main className="hf-config-error">
         <img src={financeMark} alt="" />
-        <h1>ログインの準備に失敗しました</h1>
-        <p>通信状況を確認して、もう一度お試しください。</p>
-        <button type="button" className="hf-auth-primary" onClick={() => setRetryKey((value) => value + 1)}>
-          再読み込み
-        </button>
+        <h1>認証設定を確認してください</h1>
+        <p>Hoiku Poppy共通の VITE_CLERK_PUBLISHABLE_KEY が設定されていません。</p>
       </main>
     );
   }
@@ -191,10 +125,11 @@ function Root() {
   return (
     <ClerkProvider
       publishableKey={authPublicKey}
-      signInUrl="/login"
-      signUpUrl="/signup"
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      signInUrl={appPath("/login")}
+      signUpUrl={appPath("/signup")}
+      signInFallbackRedirectUrl={appPath("/")}
+      signUpFallbackRedirectUrl={appPath("/")}
+      afterSignOutUrl={appPath("/login")}
     >
       <AuthGate />
     </ClerkProvider>
@@ -203,7 +138,7 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={configuredBasePath || undefined}>
       <Root />
     </BrowserRouter>
   </React.StrictMode>
