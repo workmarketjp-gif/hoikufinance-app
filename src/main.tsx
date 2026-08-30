@@ -13,6 +13,7 @@ import "./brand-overrides.css";
 import "./login.css";
 import "./budget-operations.css";
 import "./finance-enhancements.css";
+import "./budget-live.css";
 import "./auth-overrides.css";
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
