@@ -1,103 +1,37 @@
-import { useState } from "react";
-import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
-import { useNavigate } from "react-router";
+import { SignIn } from "@clerk/react";
+import { BarChart3, CheckCircle2, ShieldCheck, WalletCards } from "lucide-react";
 import financeLogo from "./logo/logo_hoikufinance.png";
 import financeMark from "./logo/logom_hoikufinance.png";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitting(true);
-    window.setTimeout(() => navigate("/"), 650);
-  };
-
   return (
     <main className="hf-login-page">
-      {submitting && (
-        <div className="hf-login-loading" aria-live="polite" aria-label="ログイン中">
-          <div className="hf-login-loading-card">
-            <img src={financeMark} alt="" className="hf-login-spinner" />
-            <strong>Hoiku Finance</strong>
-            <span>ログインしています</span>
+      <section className="hf-login-brand-panel">
+        <div className="hf-login-brand-inner">
+          <img className="hf-login-full-logo" src={financeLogo} alt="Hoiku Finance" />
+          <div className="hf-login-message">
+            <span className="hf-login-eyebrow">Hoiku Grove</span>
+            <h1>保育に使えるお金を、<br />もっと見えるように。</h1>
+            <p>本部の会計と、園長・主任が動かせる予算を分けながら、同じ数字でつなぎます。</p>
           </div>
+          <div className="hf-login-feature-list">
+            <div><WalletCards size={19} /><span><strong>園予算</strong><small>利用可能額・繰越・承認を明確に</small></span></div>
+            <div><BarChart3 size={19} /><span><strong>運営状況</strong><small>現場にも必要な範囲で経営を見える化</small></span></div>
+            <div><ShieldCheck size={19} /><span><strong>権限管理</strong><small>給与・本部費などは閲覧範囲を分離</small></span></div>
+          </div>
+          <div className="hf-login-security"><CheckCircle2 size={16} /><span>Hoiku Officeと共通の認証・施設権限を使用します</span></div>
         </div>
-      )}
+      </section>
 
-      <section className="hf-login-shell">
-        <div className="hf-login-brand-panel">
-          <img src={financeLogo} alt="Hoiku Finance" className="hf-login-logo" />
-          <div className="hf-login-brand-copy">
-            <span className="hf-login-kicker">保育園会計を、もっとわかりやすく。</span>
-            <h1>毎日の出納から、決算・経営情報報告まで。</h1>
-            <p>
-              現金出納、収入簿、支出簿、公定価格・加算、決算書作成まで、
-              保育園の会計業務をひとつにつなぎます。
-            </p>
-          </div>
-          <div className="hf-login-feature-list" aria-label="主な機能">
-            <span>日々の出納管理</span>
-            <span>社会福祉法人会計・企業会計</span>
-            <span>ここdeサーチ報告支援</span>
-          </div>
+      <section className="hf-login-auth-panel">
+        <div className="hf-login-mobile-brand">
+          <img src={financeMark} alt="" />
+          <img src={financeLogo} alt="Hoiku Finance" />
         </div>
-
-        <div className="hf-login-form-panel">
-          <div className="hf-login-mobile-logo-wrap">
-            <img src={financeLogo} alt="Hoiku Finance" className="hf-login-mobile-logo" />
-          </div>
-          <div className="hf-login-form-head">
-            <h2>管理画面にログイン</h2>
-            <p>登録済みのメールアドレスとパスワードを入力してください。</p>
-          </div>
-
-          <form className="hf-login-form" onSubmit={onSubmit}>
-            <label className="hf-login-field">
-              <span>メールアドレス</span>
-              <div className="hf-login-input-wrap">
-                <Mail size={17} />
-                <input type="email" placeholder="name@example.jp" autoComplete="email" required />
-              </div>
-            </label>
-
-            <label className="hf-login-field">
-              <span>パスワード</span>
-              <div className="hf-login-input-wrap">
-                <LockKeyhole size={17} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="パスワード"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="hf-password-toggle"
-                  aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
-            </label>
-
-            <div className="hf-login-options">
-              <label><input type="checkbox" /> ログイン状態を保持</label>
-              <button type="button">パスワードを忘れた方</button>
-            </div>
-
-            <button type="submit" className="hf-login-submit" disabled={submitting}>
-              ログイン
-            </button>
-          </form>
-
-          <p className="hf-login-note">
-            この画面は認証UIです。実際の認証処理は今後Clerk / Supabase等の認証基盤へ接続できます。
-          </p>
+        <div className="hf-clerk-shell">
+          <SignIn routing="hash" />
         </div>
+        <p className="hf-login-footnote">アカウントは本部または施設管理者から付与されたものをご利用ください。</p>
       </section>
     </main>
   );
