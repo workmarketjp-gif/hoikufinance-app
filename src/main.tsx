@@ -23,6 +23,7 @@ const authConfigSupabaseUrl = (
   import.meta.env.VITE_SUPABASE_URL?.trim() ||
   "https://kcmmpjyngcysdfbumchk.supabase.co"
 ).replace(/\/+$/, "");
+const AUTH_LOAD_TIMEOUT_MS = 8_000;
 
 function isClerkPublishableKey(value: unknown): value is string {
   return typeof value === "string" && /^pk_(test|live)_[A-Za-z0-9._-]+$/.test(value.trim());
@@ -31,30 +32,60 @@ function isClerkPublishableKey(value: unknown): value is string {
 async function loadAuthPublicKey(): Promise<string> {
   if (isClerkPublishableKey(buildTimeAuthPublicKey)) return buildTimeAuthPublicKey;
 
-  const response = await fetch(
-    `${authConfigSupabaseUrl}/functions/v1/get-hoiku-finance-clerk-public-key`,
-    {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    },
-  );
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), AUTH_LOAD_TIMEOUT_MS);
+  try {
+    const response = await fetch(
+      `${authConfigSupabaseUrl}/functions/v1/get-hoiku-finance-clerk-public-key`,
+      {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        signal: controller.signal,
+      },
+    );
 
-  if (!response.ok) throw new Error(`auth-config:${response.status}`);
-  const payload = await response.json() as { publishableKey?: unknown };
-  if (!isClerkPublishableKey(payload.publishableKey)) throw new Error("auth-config:invalid-key");
-  return payload.publishableKey.trim();
+    if (!response.ok) throw new Error(`auth-config:${response.status}`);
+    const payload = await response.json() as { publishableKey?: unknown };
+    if (!isClerkPublishableKey(payload.publishableKey)) throw new Error("auth-config:invalid-key");
+    return payload.publishableKey.trim();
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
-function AppLoader({ label = "データを読み込んでいます" }: { label?: string }) {
+function AppLoader({
+  label = "データを読み込んでいます",
+  detail,
+}: {
+  label?: string;
+  detail?: string;
+}) {
   return (
-    <div className="loading-overlay" aria-live="polite" aria-label="読み込み中">
-      <div className="loading-card">
-        <img className="hf-auth-loading-mark" src={financeMark} alt="" />
-        <strong>Hoiku Finance</strong>
-        <span>{label}</span>
-      </div>
-    </div>
+    <main className="hf-loading-screen" aria-live="polite" aria-busy="true" role="status">
+      <section className="hf-loading-card">
+        <div className="hf-loading-logo is-animated">
+          <img className="hf-auth-loading-mark" src={financeMark} alt="Hoiku Finance" />
+        </div>
+        <h1>Hoiku Finance</h1>
+        <p>{label}</p>
+        {detail ? <small>{detail}</small> : null}
+        <div className="hf-loading-track" aria-hidden="true"><span /></div>
+      </section>
+    </main>
+  );
+}
+
+function AuthConnectionError() {
+  return (
+    <main className="hf-config-error">
+      <img src={financeMark} alt="" />
+      <h1>ログインの準備に時間がかかっています</h1>
+      <p>認証サーバーへ接続できませんでした。通信状況を確認して、もう一度お試しください。</p>
+      <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>
+        もう一度試す
+      </button>
+    </main>
   );
 }
 
@@ -69,7 +100,9 @@ function AuthenticatedFinance() {
     return () => setSupabaseAccessTokenGetter(null);
   }, [getToken, isLoaded]);
 
-  if (!isLoaded || !tokenReady) return <AppLoader label="アカウントを確認しています" />;
+  if (!isLoaded || !tokenReady) {
+    return <AppLoader label="アカウントを確認しています" />;
+  }
   if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
     return <Navigate to="/" replace />;
   }
@@ -84,7 +117,22 @@ function AuthenticatedFinance() {
 
 function AuthGate() {
   const { isLoaded, isSignedIn } = useAuth();
-  if (!isLoaded) return <AppLoader label="認証状態を確認しています" />;
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setTimedOut(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setTimedOut(true), AUTH_LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [isLoaded]);
+
+  if (!isLoaded) {
+    return timedOut
+      ? <AuthConnectionError />
+      : <AppLoader label="認証状態を確認しています" detail="通常は数秒で完了します" />;
+  }
   return isSignedIn ? <AuthenticatedFinance /> : <LoginPage />;
 }
 
@@ -119,7 +167,9 @@ function Root() {
     };
   }, [retryKey]);
 
-  if (loadingAuthConfig) return <AppLoader label="ログインを準備しています" />;
+  if (loadingAuthConfig) {
+    return <AppLoader label="ログインを準備しています" detail="認証情報を安全に読み込んでいます" />;
+  }
 
   if (!authPublicKey || authConfigError) {
     return (
