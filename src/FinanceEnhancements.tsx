@@ -4,6 +4,7 @@ import { BarChart3, BookOpen, Home, Menu, WalletCards } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import BudgetPage from "./BudgetPage";
 import OperationsPage from "./OperationsPage";
+import LiveHomePage from "./LiveHomePage";
 import { useFinanceSession } from "./FinanceSession";
 
 export default function FinanceEnhancements() {
@@ -33,9 +34,16 @@ export default function FinanceEnhancements() {
   useEffect(() => {
     const title = document.querySelector<HTMLElement>(".mobile-page-title");
     if (!title) return;
+    if (location.pathname === "/") title.textContent = "ホーム";
     if (location.pathname === "/budget") title.textContent = "予算管理";
     if (location.pathname === "/operations") title.textContent = "運営状況";
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!pageTarget) return;
+    pageTarget.classList.toggle("hf-live-home-active", location.pathname === "/");
+    return () => pageTarget.classList.remove("hf-live-home-active");
+  }, [location.pathname, pageTarget]);
 
   useEffect(() => {
     const facilityName = document.querySelector<HTMLElement>(".facility-copy strong");
@@ -46,11 +54,13 @@ export default function FinanceEnhancements() {
     if (userFacility && session.selectedFacility) userFacility.textContent = session.selectedFacility.name;
   }, [session.profile, session.selectedFacility]);
 
-  const page = location.pathname === "/budget"
-    ? <BudgetPage />
-    : location.pathname === "/operations"
-      ? <OperationsPage />
-      : null;
+  const page = location.pathname === "/"
+    ? <LiveHomePage />
+    : location.pathname === "/budget"
+      ? <BudgetPage />
+      : location.pathname === "/operations"
+        ? <OperationsPage />
+        : null;
 
   const openMenu = () => {
     document.querySelector<HTMLButtonElement>(".mobile-menu-button")?.click();
