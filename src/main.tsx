@@ -19,6 +19,7 @@ import "./operations-live.css";
 import "./home-live.css";
 import "./auth-overrides.css";
 import "./kokode-reporting.css";
+import "./kokode-reporting-status.css";
 
 const buildTimeAuthPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
 const authConfigSupabaseUrl = (
