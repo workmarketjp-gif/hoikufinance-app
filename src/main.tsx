@@ -5,6 +5,7 @@ import { BrowserRouter, Navigate } from "react-router";
 import App from "./App";
 import LoginPage from "./LoginPage";
 import FinanceEnhancements from "./FinanceEnhancements";
+import KokodeSearchReportingEnhancement from "./KokodeSearchReportingEnhancement";
 import { FinanceSessionProvider } from "./FinanceSession";
 import { setSupabaseAccessTokenGetter } from "./lib/supabase";
 import financeMark from "./logo/logom_hoikufinance.png";
@@ -17,6 +18,7 @@ import "./budget-live.css";
 import "./operations-live.css";
 import "./home-live.css";
 import "./auth-overrides.css";
+import "./kokode-reporting.css";
 
 const buildTimeAuthPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
 const authConfigSupabaseUrl = (
@@ -111,6 +113,7 @@ function AuthenticatedFinance() {
     <FinanceSessionProvider>
       <App />
       <FinanceEnhancements />
+      <KokodeSearchReportingEnhancement />
     </FinanceSessionProvider>
   );
 }
