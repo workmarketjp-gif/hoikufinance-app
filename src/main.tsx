@@ -18,7 +18,7 @@ import "./operations-live.css";
 import "./home-live.css";
 import "./auth-overrides.css";
 
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
+const authPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
 
 function AppLoader({ label = "データを読み込んでいます" }: { label?: string }) {
   return (
@@ -54,26 +54,26 @@ function AuthenticatedFinance() {
   );
 }
 
-function ClerkGate() {
+function AuthGate() {
   const { isLoaded, isSignedIn } = useAuth();
   if (!isLoaded) return <AppLoader label="認証状態を確認しています" />;
   return isSignedIn ? <AuthenticatedFinance /> : <LoginPage />;
 }
 
 function Root() {
-  if (!clerkPublishableKey) {
+  if (!authPublicKey) {
     return (
       <main className="hf-config-error">
         <img src={financeMark} alt="" />
-        <h1>認証設定が必要です</h1>
-        <p><code>VITE_CLERK_PUBLISHABLE_KEY</code> を設定してください。Hoiku Officeと同じClerk環境を使用します。</p>
+        <h1>ログイン設定を確認できませんでした</h1>
+        <p>現在ログイン機能を利用できません。管理者にお問い合わせください。</p>
       </main>
     );
   }
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey}>
-      <ClerkGate />
+    <ClerkProvider publishableKey={authPublicKey}>
+      <AuthGate />
     </ClerkProvider>
   );
 }
