@@ -1,0 +1,30 @@
+name: Verify Hoiku Poppy path
+
+on:
+  push:
+    branches:
+      - feat/hoiku-poppy-path
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build at /finance/
+        env:
+          BASE_PATH: /finance/
+          VITE_CLERK_PUBLISHABLE_KEY: pk_test_ZHVtbXkuY2xlcmsuYWNjb3VudHMuZGV2JA
+          VITE_SUPABASE_URL: https://kcmmpjyngcysdfbumchk.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_test_placeholder
+        run: npm run build
