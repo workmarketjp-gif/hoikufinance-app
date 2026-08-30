@@ -4,6 +4,9 @@ import { createPortal } from "react-dom";
 import { LogOut, MoreHorizontal, Settings } from "lucide-react";
 import { useNavigate } from "react-router";
 
+const configuredBasePath = __HF_BASE_PATH__ === "/" ? "" : __HF_BASE_PATH__.replace(/\/$/, "");
+const signOutRedirect = `${configuredBasePath}/login` || "/login";
+
 export default function FinanceAccountMenu() {
   const { signOut } = useClerk();
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ export default function FinanceAccountMenu() {
     if (signingOut) return;
     setSigningOut(true);
     try {
-      await signOut({ redirectUrl: "/login" });
+      await signOut({ redirectUrl: signOutRedirect });
     } catch {
       setSigningOut(false);
     }
@@ -100,7 +103,7 @@ export default function FinanceAccountMenu() {
           <section className="hf-logout-confirm" role="dialog" aria-modal="true" aria-labelledby="hf-logout-title">
             <div className="hf-logout-confirm-icon"><LogOut size={24} /></div>
             <h2 id="hf-logout-title">ログアウトしますか？</h2>
-            <p>Hoiku Financeからログアウトします。</p>
+            <p>Hoiku Poppyからログアウトします。</p>
             <div className="hf-logout-confirm-actions">
               <button type="button" className="hf-auth-secondary" onClick={() => setConfirmOpen(false)} disabled={signingOut}>
                 キャンセル
