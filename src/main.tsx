@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { ClerkProvider, SignedIn, SignedOut, useAuth } from "@clerk/react";
+import { ClerkProvider, useAuth } from "@clerk/react";
 import { BrowserRouter, Navigate } from "react-router";
 import App from "./App";
 import LoginPage from "./LoginPage";
@@ -52,6 +52,12 @@ function AuthenticatedFinance() {
   );
 }
 
+function ClerkGate() {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded) return <AppLoader label="認証状態を確認しています" />;
+  return isSignedIn ? <AuthenticatedFinance /> : <LoginPage />;
+}
+
 function Root() {
   if (!clerkPublishableKey) {
     return (
@@ -65,8 +71,7 @@ function Root() {
 
   return (
     <ClerkProvider publishableKey={clerkPublishableKey}>
-      <SignedOut><LoginPage /></SignedOut>
-      <SignedIn><AuthenticatedFinance /></SignedIn>
+      <ClerkGate />
     </ClerkProvider>
   );
 }
