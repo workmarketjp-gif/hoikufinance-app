@@ -5,6 +5,7 @@ import { NavLink, useLocation } from "react-router";
 import BudgetPage from "./BudgetPage";
 import OperationsPage from "./OperationsPage";
 import LiveHomePage from "./LiveHomePage";
+import FinanceAccountMenu from "./FinanceAccountMenu";
 import { useFinanceSession } from "./FinanceSession";
 
 export default function FinanceEnhancements() {
@@ -12,11 +13,14 @@ export default function FinanceEnhancements() {
   const session = useFinanceSession();
   const [sidebarSlot, setSidebarSlot] = useState<HTMLElement | null>(null);
   const [pageTarget, setPageTarget] = useState<HTMLElement | null>(null);
+  const [accountTarget, setAccountTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const sidebar = document.querySelector<HTMLElement>(".sidebar-nav");
     const page = document.querySelector<HTMLElement>(".page-content");
+    const account = document.querySelector<HTMLElement>(".sidebar-user");
     setPageTarget(page);
+    setAccountTarget(account);
 
     if (!sidebar) return;
     const slot = document.createElement("div");
@@ -28,6 +32,7 @@ export default function FinanceEnhancements() {
     return () => {
       slot.remove();
       setSidebarSlot(null);
+      setAccountTarget(null);
     };
   }, []);
 
@@ -81,6 +86,7 @@ export default function FinanceEnhancements() {
         sidebarSlot,
       )}
 
+      {accountTarget && createPortal(<FinanceAccountMenu />, accountTarget)}
       {pageTarget && page && createPortal(page, pageTarget)}
 
       <nav className="finance-mobile-bottom-nav" aria-label="Hoiku Finance主要メニュー">
