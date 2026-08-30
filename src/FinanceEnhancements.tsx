@@ -4,9 +4,11 @@ import { BarChart3, BookOpen, Home, Menu, WalletCards } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
 import BudgetPage from "./BudgetPage";
 import OperationsPage from "./OperationsPage";
+import { useFinanceSession } from "./FinanceSession";
 
 export default function FinanceEnhancements() {
   const location = useLocation();
+  const session = useFinanceSession();
   const [sidebarSlot, setSidebarSlot] = useState<HTMLElement | null>(null);
   const [pageTarget, setPageTarget] = useState<HTMLElement | null>(null);
 
@@ -35,6 +37,15 @@ export default function FinanceEnhancements() {
     if (location.pathname === "/operations") title.textContent = "運営状況";
   }, [location.pathname]);
 
+  useEffect(() => {
+    const facilityName = document.querySelector<HTMLElement>(".facility-copy strong");
+    const userName = document.querySelector<HTMLElement>(".sidebar-user-copy strong");
+    const userFacility = document.querySelector<HTMLElement>(".sidebar-user-copy span");
+    if (facilityName && session.selectedFacility) facilityName.textContent = session.selectedFacility.name;
+    if (userName && session.profile) userName.textContent = session.profile.displayName;
+    if (userFacility && session.selectedFacility) userFacility.textContent = session.selectedFacility.name;
+  }, [session.profile, session.selectedFacility]);
+
   const page = location.pathname === "/budget"
     ? <BudgetPage />
     : location.pathname === "/operations"
@@ -51,10 +62,10 @@ export default function FinanceEnhancements() {
         <div className="nav-group finance-special-nav">
           <div className="nav-group-label">予算・運営</div>
           <NavLink to="/budget" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
-            <WalletCards size={18} strokeWidth={1.9} /><span>予算管理</span><span className="nav-pill budget-pill">48.9万</span>
+            <WalletCards size={18} strokeWidth={1.9} /><span>予算管理</span>
           </NavLink>
           <NavLink to="/operations" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
-            <BarChart3 size={18} strokeWidth={1.9} /><span>運営状況</span><span className="nav-pill operations-pill">86.7%</span>
+            <BarChart3 size={18} strokeWidth={1.9} /><span>運営状況</span>
           </NavLink>
         </div>,
         sidebarSlot,
