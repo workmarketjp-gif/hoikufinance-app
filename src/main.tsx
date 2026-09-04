@@ -33,7 +33,7 @@ const relativePathname = () => {
   const stripped = pathname.startsWith(configuredBasePath) ? pathname.slice(configuredBasePath.length) : pathname;
   return stripped || "/";
 };
-const AUTH_LOAD_TIMEOUT_MS = 8_000;
+const AUTH_LOAD_TIMEOUT_MS = 12_000;
 
 function isClerkPublishableKey(value: unknown): value is string {
   return typeof value === "string" && /^pk_(test|live)_[A-Za-z0-9._-]+$/.test(value.trim());
@@ -42,8 +42,17 @@ function isClerkPublishableKey(value: unknown): value is string {
 async function resolveClerkPublishableKey(): Promise<string | null> {
   if (isClerkPublishableKey(embeddedAuthPublicKey)) return embeddedAuthPublicKey;
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
+
   try {
-    const response = await fetch(`${supabaseUrl}/functions/v1/get-hoiku-poppy-clerk-public-key`, { cache: "no-store" });
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 8_000);
+    const response = await fetch(`${supabaseUrl}/functions/v1/get-hoiku-finance-clerk-public-key`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    window.clearTimeout(timeout);
+
     if (!response.ok) return null;
     const body = (await response.json()) as { publishableKey?: unknown };
     return isClerkPublishableKey(body.publishableKey) ? body.publishableKey.trim() : null;
@@ -71,7 +80,7 @@ function AuthConnectionError() {
     <main className="hf-config-error">
       <img src={financeMark} alt="" />
       <h1>ログインの準備に時間がかかっています</h1>
-      <p>認証サーバーへ接続できませんでした。通信状況を確認して、もう一度お試しください。</p>
+      <p>認証サーバーへの接続を完了できませんでした。もう一度お試しください。</p>
       <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>もう一度試す</button>
     </main>
   );
@@ -80,14 +89,17 @@ function AuthConnectionError() {
 function AuthenticatedFinance() {
   const { isLoaded, getToken } = useAuth();
   const [tokenReady, setTokenReady] = useState(false);
+
   useEffect(() => {
     if (!isLoaded) return;
     setSupabaseAccessTokenGetter(async () => getToken());
     setTokenReady(true);
     return () => setSupabaseAccessTokenGetter(null);
   }, [getToken, isLoaded]);
+
   if (!isLoaded || !tokenReady) return <AppLoader label="アカウントを確認しています" />;
   if (["/login", "/signup"].includes(relativePathname())) return <Navigate to="/" replace />;
+
   return (
     <FinanceSessionProvider>
       <PoppyServiceBar />
@@ -101,12 +113,22 @@ function AuthenticatedFinance() {
 function AuthGate() {
   const { isLoaded, isSignedIn } = useAuth();
   const [timedOut, setTimedOut] = useState(false);
+
   useEffect(() => {
-    if (isLoaded) { setTimedOut(false); return; }
+    if (isLoaded) {
+      setTimedOut(false);
+      return;
+    }
     const timer = window.setTimeout(() => setTimedOut(true), AUTH_LOAD_TIMEOUT_MS);
     return () => window.clearTimeout(timer);
   }, [isLoaded]);
-  if (!isLoaded) return timedOut ? <AuthConnectionError /> : <AppLoader label="認証状態を確認しています" detail="通常は数秒で完了します" />;
+
+  if (!isLoaded) {
+    return timedOut
+      ? <AuthConnectionError />
+      : <AppLoader label="認証状態を確認しています" detail="通常は数秒で完了します" />;
+  }
+
   return isSignedIn ? <AuthenticatedFinance /> : <LoginPage />;
 }
 
@@ -132,11 +154,14 @@ void resolveClerkPublishableKey().then((publishableKey) => {
   root.render(
     <React.StrictMode>
       <BrowserRouter basename={configuredBasePath || undefined}>
-        {publishableKey ? <FinanceRoot publishableKey={publishableKey} /> : (
+        {publishableKey ? (
+          <FinanceRoot publishableKey={publishableKey} />
+        ) : (
           <main className="hf-config-error">
             <img src={financeMark} alt="" />
-            <h1>認証設定を確認してください</h1>
-            <p>Hoiku Poppy共通のClerk Publishable Keyを読み込めませんでした。</p>
+            <h1>ログイン設定を読み込めませんでした</h1>
+            <p>Hoiku Financeの認証設定を取得できませんでした。もう一度お試しください。</p>
+            <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>もう一度試す</button>
           </main>
         )}
       </BrowserRouter>
