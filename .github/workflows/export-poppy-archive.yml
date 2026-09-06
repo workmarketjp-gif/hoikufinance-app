@@ -1,0 +1,48 @@
+name: Export compact Poppy archive
+
+on:
+  push:
+    branches: [poppy-monorepo-export]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    if: ${{ !contains(github.event.head_commit.message || '', '[poppy-archive-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Build exact main-branch archive
+        run: |
+          set -euo pipefail
+          git fetch origin main --depth=1
+          SOURCE_COMMIT="$(git rev-parse origin/main)"
+          rm -rf /tmp/poppy-source /tmp/poppy-archive __migration/poppy-archive
+          mkdir -p /tmp/poppy-source /tmp/poppy-archive __migration/poppy-archive
+          git archive --format=tar origin/main | tar -xf - -C /tmp/poppy-source
+          rm -f /tmp/poppy-source/.env
+          find /tmp/poppy-source -maxdepth 1 -type f -name '.env.*' ! -name '.env.example' -delete
+          rm -rf /tmp/poppy-source/__migration
+          rm -f /tmp/poppy-source/src/logo/logo_hoikugrove_all.png
+          tar -C /tmp/poppy-source -cJf /tmp/poppy-archive/source.tar.xz .
+          ARCHIVE_SHA="$(sha256sum /tmp/poppy-archive/source.tar.xz | awk '{print $1}')"
+          base64 -w0 /tmp/poppy-archive/source.tar.xz > /tmp/poppy-archive/source.b64
+          split -b 400000 -d -a 3 /tmp/poppy-archive/source.b64 __migration/poppy-archive/chunk-
+          CHUNK_COUNT="$(find __migration/poppy-archive -type f -name 'chunk-*' | wc -l | tr -d ' ')"
+          ARCHIVE_BYTES="$(stat -c '%s' /tmp/poppy-archive/source.tar.xz)"
+          FILE_COUNT="$(find /tmp/poppy-source -type f | wc -l | tr -d ' ')"
+          cat > __migration/poppy-archive/manifest.json <<EOF
+          {"sourceRepo":"${GITHUB_REPOSITORY}","sourceCommit":"${SOURCE_COMMIT}","fileCount":${FILE_COUNT},"archiveBytes":${ARCHIVE_BYTES},"chunkCount":${CHUNK_COUNT},"sha256":"${ARCHIVE_SHA}","encoding":"base64+xz","excluded":["real .env secrets","obsolete logo_hoikugrove_all.png"]}
+          EOF
+          echo "Archive ${ARCHIVE_BYTES} bytes, ${CHUNK_COUNT} chunks, ${FILE_COUNT} files"
+      - name: Commit compact archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add __migration/poppy-archive
+          git commit -m "[poppy-archive-generated] compact source archive" || exit 0
+          git push
