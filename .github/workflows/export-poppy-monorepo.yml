@@ -37,7 +37,8 @@ jobs:
             const isSecretEnv = file === '.env' || (/^\.env\./.test(file) && file !== '.env.example');
             const isExporter = file === '.github/workflows/export-poppy-monorepo.yml';
             const isGenerated = file.startsWith('__migration/poppy-export/');
-            if (isSecretEnv || isExporter || isGenerated) { excluded.push(file); continue; }
+            const isObsoleteGroveComposite = file.endsWith('logo_hoikugrove_all.png');
+            if (isSecretEnv || isExporter || isGenerated || isObsoleteGroveComposite) { excluded.push(file); continue; }
             files.push({ path: file, mode, content: fs.readFileSync(file).toString('base64') });
           }
           const maxBytes = 190000;
@@ -52,7 +53,7 @@ jobs:
           packs.forEach((pack, index) => fs.writeFileSync(path.join(outDir, `pack-${String(index + 1).padStart(3, '0')}.json`), JSON.stringify(pack)));
           let sourceCommit = process.env.GITHUB_SHA || '';
           try { sourceCommit = cp.execSync('git rev-parse HEAD^', { encoding: 'utf8' }).trim(); } catch {}
-          fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify({ sourceRepo: process.env.GITHUB_REPOSITORY, sourceCommit, exportedAt: new Date().toISOString(), fileCount: files.length, packCount: packs.length, excluded, note: 'Tracked repository snapshot. Real .env secrets and temporary exporter files are intentionally excluded.' }, null, 2));
+          fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify({ sourceRepo: process.env.GITHUB_REPOSITORY, sourceCommit, exportedAt: new Date().toISOString(), fileCount: files.length, packCount: packs.length, excluded, note: 'Tracked source snapshot. Real .env secrets, temporary exporter files, and obsolete Hoiku Grove composite branding are intentionally excluded from the Poppy monorepo.' }, null, 2));
           console.log(`Exported ${files.length} tracked files into ${packs.length} packs.`);
           NODE
       - name: Commit export packs
