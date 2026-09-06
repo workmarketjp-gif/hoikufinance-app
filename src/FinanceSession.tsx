@@ -57,6 +57,16 @@ function persistFacilityId(id: string) {
   window.localStorage.setItem(LEGACY_FINANCE_FACILITY_KEY, id);
 }
 
+async function syncLegacyOfficeDefaultFacility(id: string) {
+  if (!id) return;
+  try {
+    const result = await getSupabaseClient().rpc("ho_poppy_set_active_facility", { p_facility_id: id });
+    if (result.error) console.warn("[Hoiku Finance] Poppy facility sync skipped", result.error);
+  } catch (error) {
+    console.warn("[Hoiku Finance] Poppy facility sync failed", error);
+  }
+}
+
 export function FinanceSessionProvider({ children }: { children: ReactNode }) {
   const { userId } = useAuth();
   const [profile, setProfile] = useState<FinanceProfile | null>(null);
@@ -68,6 +78,7 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
   const setSelectedFacilityId = useCallback((id: string) => {
     setSelectedFacilityIdState(id);
     persistFacilityId(id);
+    void syncLegacyOfficeDefaultFacility(id);
   }, []);
 
   const reload = useCallback(async () => {
@@ -119,6 +130,7 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
       const resolvedFacilityId = allowedStored || profileFacility || first;
       setSelectedFacilityIdState(resolvedFacilityId);
       persistFacilityId(resolvedFacilityId);
+      await syncLegacyOfficeDefaultFacility(resolvedFacilityId);
     } catch (caught) {
       setProfile(null);
       setFacilities([]);
@@ -138,6 +150,7 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
       if (!facilities.some((facility) => facility.id === event.newValue)) return;
       setSelectedFacilityIdState(event.newValue);
       window.localStorage.setItem(LEGACY_FINANCE_FACILITY_KEY, event.newValue);
+      void syncLegacyOfficeDefaultFacility(event.newValue);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
