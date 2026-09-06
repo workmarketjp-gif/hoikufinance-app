@@ -36,8 +36,26 @@ type FinanceSessionValue = {
 
 const HQ_ROLES = new Set(["owner", "admin", "office_manager", "accounting_manager"]);
 const FACILITY_MANAGER_ROLES = new Set(["owner", "admin", "director", "office_manager", "accounting_manager", "chief_teacher"]);
+const POPPY_ACTIVE_FACILITY_KEY = "hoiku-poppy:active-facility-id";
+const LEGACY_FINANCE_FACILITY_KEY = "hf.selectedFacilityId";
 
 const FinanceSessionContext = createContext<FinanceSessionValue | null>(null);
+
+function readStoredFacilityId(): string {
+  if (typeof window === "undefined") return "";
+  return (
+    window.localStorage.getItem(POPPY_ACTIVE_FACILITY_KEY) ||
+    window.localStorage.getItem(LEGACY_FINANCE_FACILITY_KEY) ||
+    ""
+  );
+}
+
+function persistFacilityId(id: string) {
+  if (typeof window === "undefined" || !id) return;
+  window.localStorage.setItem(POPPY_ACTIVE_FACILITY_KEY, id);
+  // Keep the legacy key during migration so an older Finance build keeps the same facility.
+  window.localStorage.setItem(LEGACY_FINANCE_FACILITY_KEY, id);
+}
 
 export function FinanceSessionProvider({ children }: { children: ReactNode }) {
   const { userId } = useAuth();
@@ -49,7 +67,7 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
 
   const setSelectedFacilityId = useCallback((id: string) => {
     setSelectedFacilityIdState(id);
-    if (id) window.localStorage.setItem("hf.selectedFacilityId", id);
+    persistFacilityId(id);
   }, []);
 
   const reload = useCallback(async () => {
@@ -94,11 +112,13 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
       }));
       setFacilities(nextFacilities);
 
-      const stored = window.localStorage.getItem("hf.selectedFacilityId") ?? "";
+      const stored = readStoredFacilityId();
       const allowedStored = nextFacilities.some((facility) => facility.id === stored) ? stored : "";
       const profileFacility = nextProfile.facilityId && nextFacilities.some((facility) => facility.id === nextProfile.facilityId) ? nextProfile.facilityId : "";
       const first = nextFacilities[0]?.id ?? "";
-      setSelectedFacilityIdState(allowedStored || profileFacility || first);
+      const resolvedFacilityId = allowedStored || profileFacility || first;
+      setSelectedFacilityIdState(resolvedFacilityId);
+      persistFacilityId(resolvedFacilityId);
     } catch (caught) {
       setProfile(null);
       setFacilities([]);
@@ -110,6 +130,18 @@ export function FinanceSessionProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   useEffect(() => { void reload(); }, [reload]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== POPPY_ACTIVE_FACILITY_KEY || !event.newValue) return;
+      if (!facilities.some((facility) => facility.id === event.newValue)) return;
+      setSelectedFacilityIdState(event.newValue);
+      window.localStorage.setItem(LEGACY_FINANCE_FACILITY_KEY, event.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [facilities]);
 
   const role = profile?.role ?? "";
   const isHeadOffice = HQ_ROLES.has(role);
