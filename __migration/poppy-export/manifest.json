@@ -1,0 +1,11 @@
+{
+  "sourceRepo": "workmarketjp-gif/hoikufinance-app",
+  "sourceCommit": "2ad994751fcf5f2e9e43bf63a935f9b6ba0a540c",
+  "exportedAt": "2026-09-06T00:59:19.251Z",
+  "fileCount": 52,
+  "packCount": 6,
+  "excluded": [
+    ".github/workflows/export-poppy-monorepo.yml"
+  ],
+  "note": "Tracked repository snapshot. Real .env secrets and temporary exporter files are intentionally excluded."
+}
