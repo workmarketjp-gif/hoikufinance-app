@@ -1,11 +1,19 @@
 {
   "sourceRepo": "workmarketjp-gif/hoikufinance-app",
-  "sourceCommit": "2ad994751fcf5f2e9e43bf63a935f9b6ba0a540c",
-  "exportedAt": "2026-09-06T00:59:19.251Z",
-  "fileCount": 52,
-  "packCount": 6,
+  "sourceCommit": "0e2acd41bcfec73df1fd016e1f20799417e5dd41",
+  "exportedAt": "2026-09-06T01:00:17.293Z",
+  "fileCount": 51,
+  "packCount": 4,
   "excluded": [
-    ".github/workflows/export-poppy-monorepo.yml"
+    ".github/workflows/export-poppy-monorepo.yml",
+    "__migration/poppy-export/manifest.json",
+    "__migration/poppy-export/pack-001.json",
+    "__migration/poppy-export/pack-002.json",
+    "__migration/poppy-export/pack-003.json",
+    "__migration/poppy-export/pack-004.json",
+    "__migration/poppy-export/pack-005.json",
+    "__migration/poppy-export/pack-006.json",
+    "src/logo/logo_hoikugrove_all.png"
   ],
-  "note": "Tracked repository snapshot. Real .env secrets and temporary exporter files are intentionally excluded."
+  "note": "Tracked source snapshot. Real .env secrets, temporary exporter files, and obsolete Hoiku Grove composite branding are intentionally excluded from the Poppy monorepo."
 }
