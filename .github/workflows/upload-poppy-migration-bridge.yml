@@ -1,0 +1,29 @@
+name: Upload Finance source archive
+
+on:
+  push:
+    branches: [poppy-monorepo-export]
+    paths:
+      - .github/workflows/upload-poppy-migration-bridge.yml
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild and verify archive
+        run: |
+          set -euo pipefail
+          cat __migration/poppy-archive/chunk-* | base64 --decode > /tmp/source.tar.xz
+          echo '1fcb47716ba2b54f892ad270c416cc9cbf4398f7d508b5dd800613775c3a75d6  /tmp/source.tar.xz' | sha256sum --check --strict
+      - name: Upload to private bridge
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 \
+            -X POST \
+            -H 'content-type: application/x-xz' \
+            -H 'x-service: finance' \
+            -H 'x-sha256: 1fcb47716ba2b54f892ad270c416cc9cbf4398f7d508b5dd800613775c3a75d6' \
+            --data-binary @/tmp/source.tar.xz \
+            'https://kcmmpjyngcysdfbumchk.supabase.co/functions/v1/temporary-poppy-migration-bridge?service=finance'
