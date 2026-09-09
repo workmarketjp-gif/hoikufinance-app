@@ -1,16 +1,18 @@
 import type { CSSProperties } from "react";
 
+const POPPY_ORIGIN = "https://app.hoikupoppy.ai";
+
 const services = [
-  { code: "office", label: "Office", detail: "園務・労務", href: "/office/", color: "#ff9f1c" },
-  { code: "market", label: "Market", detail: "Web・集客", href: "/market/", color: "#34b96f" },
-  { code: "color", label: "Color", detail: "求人・採用", href: "/color/", color: "#ff4d73" },
-  { code: "finance", label: "Finance", detail: "会計・経営", href: "/finance/", color: "#2f80ed" },
+  { code: "office", label: "Office", detail: "園務・労務", href: `${POPPY_ORIGIN}/office`, color: "#ff9f1c" },
+  { code: "market", label: "Market", detail: "Web・集客", href: `${POPPY_ORIGIN}/market`, color: "#34b96f" },
+  { code: "color", label: "Color", detail: "求人・採用", href: `${POPPY_ORIGIN}/color`, color: "#ff4d73" },
+  { code: "finance", label: "Finance", detail: "会計・経営", href: `${POPPY_ORIGIN}/finance`, color: "#2f80ed" },
 ] as const;
 
 export function PoppyServiceBar() {
   return (
     <nav className="hf-poppy-service-bar" aria-label="Hoiku Poppy サービス切替">
-      <a className="hf-poppy-home" href="/" aria-label="Hoiku Poppy ホーム">
+      <a className="hf-poppy-home" href={POPPY_ORIGIN} aria-label="Hoiku Poppy ホーム">
         <span className="hf-poppy-mark" aria-hidden="true"><i /><i /><i /><i /></span>
         <span>Hoiku Poppy</span>
       </a>
