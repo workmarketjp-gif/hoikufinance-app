@@ -39,8 +39,7 @@ function isClerkPublishableKey(value: unknown): value is string {
   return typeof value === "string" && /^pk_(test|live)_[A-Za-z0-9._-]+$/.test(value.trim());
 }
 
-async function resolveClerkPublishableKey(): Promise<string | null> {
-  if (isClerkPublishableKey(embeddedAuthPublicKey)) return embeddedAuthPublicKey;
+async function fetchPoppyClerkPublishableKey(): Promise<string | null> {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
 
   try {
@@ -59,6 +58,13 @@ async function resolveClerkPublishableKey(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+async function resolveClerkPublishableKey(): Promise<string | null> {
+  const onCanonicalPoppyHost = typeof window !== "undefined" && window.location.hostname === "app.hoikupoppy.ai";
+  if (onCanonicalPoppyHost) return fetchPoppyClerkPublishableKey();
+  if (isClerkPublishableKey(embeddedAuthPublicKey)) return embeddedAuthPublicKey;
+  return fetchPoppyClerkPublishableKey();
 }
 
 function AppLoader({ label = "データを読み込んでいます", detail }: { label?: string; detail?: string }) {
