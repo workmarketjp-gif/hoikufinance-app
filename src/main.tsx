@@ -46,7 +46,7 @@ async function resolveClerkPublishableKey(): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8_000);
-    const response = await fetch(`${supabaseUrl}/functions/v1/get-hoiku-finance-clerk-public-key`, {
+    const response = await fetch(`${supabaseUrl}/functions/v1/get-hoiku-poppy-clerk-public-key`, {
       cache: "no-store",
       headers: { Accept: "application/json" },
       signal: controller.signal,
@@ -160,7 +160,7 @@ void resolveClerkPublishableKey().then((publishableKey) => {
           <main className="hf-config-error">
             <img src={financeMark} alt="" />
             <h1>ログイン設定を読み込めませんでした</h1>
-            <p>Hoiku Financeの認証設定を取得できませんでした。もう一度お試しください。</p>
+            <p>Hoiku Poppy共通の認証設定を取得できませんでした。もう一度お試しください。</p>
             <button type="button" className="hf-auth-primary" onClick={() => window.location.reload()}>もう一度試す</button>
           </main>
         )}
