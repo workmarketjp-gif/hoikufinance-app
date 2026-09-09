@@ -1,0 +1,19 @@
+/* Shared Hoiku Office design tokens. Keep identical in all four repositories. */
+:root { --poppy-bg:#f6f8fb; --poppy-surface:#fff; --poppy-border:#e7ebf1; --poppy-ink:#151922; --poppy-muted:#4b5565; --poppy-radius:13px; --poppy-radius-lg:18px; --poppy-shadow:0 1px 2px rgb(28 36 51 / 5%); --poppy-font:"Noto Sans JP",-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif; }
+.poppy-services { min-width:0; font-family:var(--poppy-font); color:var(--poppy-ink); text-align:left; }
+.poppy-services-heading { font-size:11px; font-weight:600; color:var(--poppy-muted); margin:0 0 8px; }
+.poppy-services--sidebar { padding:16px 10px; border-top:1px solid var(--poppy-border); }
+.poppy-services-grid { display:grid; gap:8px; }
+.poppy-services--dashboard { margin:0 0 24px; }
+.poppy-services--dashboard .poppy-services-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.poppy-service { display:flex; align-items:center; gap:10px; min-width:0; min-height:64px; padding:10px; border:1px solid var(--poppy-border); border-radius:var(--poppy-radius); background:var(--poppy-surface); color:var(--poppy-ink); text-decoration:none!important; box-shadow:var(--poppy-shadow); }
+.poppy-service:hover,.poppy-service.is-current { border-color:var(--service-color); background:color-mix(in srgb,var(--service-color) 7%,white); }
+.poppy-service:focus-visible { outline:3px solid var(--service-color); outline-offset:3px; }
+.poppy-service img { width:32px!important; height:32px!important; flex-shrink:0; object-fit:contain; }
+.poppy-service-copy { display:flex; flex-direction:column; gap:3px; min-width:0; flex:1; }
+.poppy-service-copy strong { font-size:12px; font-weight:600; line-height:1.4; }
+.poppy-service-copy small { font-size:10px; color:var(--poppy-muted); line-height:1.5; overflow-wrap:anywhere; }
+.poppy-service-state { flex-shrink:0; font-size:10px; font-weight:600; color:color-mix(in srgb,var(--service-color) 70%,#172033); }
+@media(max-width:1100px) { .poppy-services--dashboard .poppy-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:480px) { .poppy-services--dashboard .poppy-service { flex-wrap:wrap; gap:6px; padding:10px; } .poppy-services--dashboard .poppy-service-copy { flex-basis:calc(100% - 40px); } .poppy-services--dashboard .poppy-service-state { margin-left:auto; } }
+@media(prefers-reduced-motion:reduce) { .poppy-service { transition:none; } }

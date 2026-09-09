@@ -5,3 +5,8 @@ dist
 !.env.example
 .DS_Store
 .vscode
+
+# Local UI verification artifacts
+qa-results/
+*.log
+*.tsbuildinfo

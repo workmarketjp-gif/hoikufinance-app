@@ -1,3 +1,4 @@
+import { PoppyServices } from "./poppy/PoppyServices";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -91,6 +92,7 @@ export default function LiveHomePage() {
 
   return (
     <div className="hf-live-home">
+      <PoppyServices current="finance" variant="dashboard" />
       <div className="page-header hf-live-home-header">
         <div>
           <h1>Hoiku Finance</h1>

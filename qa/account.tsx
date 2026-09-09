@@ -1,0 +1,1 @@
+export default function AccountFixture(){return <span>検証用管理者</span>}

@@ -1,3 +1,4 @@
+import "./poppy/poppy-ui.css";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { ClerkProvider, useAuth } from "@clerk/react";
@@ -7,7 +8,6 @@ import LoginPage from "./LoginPage";
 import FinanceEnhancements from "./FinanceEnhancements";
 import KokodeSearchReportingEnhancement from "./KokodeSearchReportingEnhancement";
 import { FinanceSessionProvider } from "./FinanceSession";
-import { PoppyServiceBar } from "./PoppyServiceBar";
 import { setSupabaseAccessTokenGetter } from "./lib/supabase";
 import financeMark from "./logo/logom_hoikufinance.png";
 import "./styles.css";
@@ -22,6 +22,7 @@ import "./auth-overrides.css";
 import "./kokode-reporting.css";
 import "./kokode-reporting-status.css";
 import "./poppy-service-bar.css";
+import "./poppy/poppy-shell.css";
 
 const DEFAULT_SUPABASE_URL = "https://kcmmpjyngcysdfbumchk.supabase.co";
 const embeddedAuthPublicKey = __HF_CLERK_PUBLIC_KEY__.trim();
@@ -108,7 +109,6 @@ function AuthenticatedFinance() {
 
   return (
     <FinanceSessionProvider>
-      <PoppyServiceBar />
       <App />
       <FinanceEnhancements />
       <KokodeSearchReportingEnhancement />

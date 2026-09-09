@@ -1,0 +1,63 @@
+/* Shared shell geometry follows Hoiku Office; business pages keep their own structure. */
+:is(.hm-admin-shell,.hc-app-shell,.app-shell) { font-family:var(--poppy-font); color:var(--poppy-ink); }
+.hm-admin-shell,.hc-app-shell { background:var(--poppy-bg)!important; }
+.hm-admin-shell aside,.hc-sidebar,.app-shell > .sidebar { border-color:var(--poppy-border); box-shadow:none; }
+.hm-content,.hc-content,.page-content { min-width:0; }
+.hm-content h1,.hc-content h1,.page-content h1 { font-size:24px; line-height:1.4; font-weight:600; }
+.hm-content h2,.hc-content h2,.page-content h2 { font-size:18px; line-height:1.4; font-weight:600; }
+.hm-content :is(.rounded-xl,.rounded-2xl,.rounded-3xl).bg-white,.hc-panel,.hc-metric,.hc-job-card,.page-content .panel,.page-content .card { border-radius:var(--poppy-radius)!important; border-color:var(--poppy-border); box-shadow:var(--poppy-shadow); }
+.hm-mobile-header,.hc-topbar,.app-shell .topbar { height:64px!important; min-height:64px; background:var(--poppy-surface)!important; border-bottom:1px solid var(--poppy-border); box-shadow:none; }
+.hm-mobile-header { display:flex!important; }
+.hm-admin-shell aside { z-index:60; }
+.hm-admin-shell aside nav a,.hm-admin-shell aside nav button { font-weight:500; border-radius:8px; box-shadow:none; }
+.hm-admin-shell aside nav a[aria-current="page"],.hc-nav-button.active,.app-shell .nav-link.active { font-weight:600; }
+.hc-sidebar { overflow-y:auto; }
+.hc-sidebar > * { flex-shrink:0; }
+.hc-sidebar .poppy-services { margin-top:16px; }
+.hc-nav-button { min-height:44px; font-size:13px; font-weight:500; }
+.hc-topbar-spacer::before { content:"Hoiku Color 管理画面"; font-size:13px; font-weight:600; color:var(--poppy-muted); }
+.hm-content { padding:24px!important; }
+.hc-content { width:100%; padding:24px; }
+.page-content { max-width:1440px; padding:24px; }
+.hm-content :is(input,select,textarea),.hc-content :is(input,select,textarea),.page-content :is(input,select,textarea) { min-width:0; max-width:100%; }
+@media(min-width:901px) {
+  .hc-sidebar,.app-shell > .sidebar { width:244px; }
+  .hc-main-column { margin-left:244px; }
+  .hm-bottom-nav,.finance-mobile-bottom-nav,.hc-mobile-nav { display:none!important; }
+}
+@media(max-width:900px) {
+  .hm-content,.hc-content,.page-content { padding:16px 14px calc(100px + env(safe-area-inset-bottom))!important; }
+  .hm-content h1,.hc-content h1,.page-content h1 { font-size:20px; }
+  .hc-sidebar { display:none; }
+  .hc-main-column { margin-left:0; }
+  .hc-mobile-nav,.finance-mobile-bottom-nav { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .hm-bottom-nav,.finance-mobile-bottom-nav,.hc-mobile-nav { position:fixed; left:10px!important; right:10px!important; bottom:calc(8px + env(safe-area-inset-bottom))!important; height:66px; padding:4px; border:1px solid var(--poppy-border)!important; border-radius:16px!important; background:var(--poppy-surface)!important; box-shadow:0 3px 12px rgb(28 36 51 / 8%)!important; z-index:50; }
+  .hm-bottom-nav > div { min-height:56px; padding:0; }
+  .hm-content :is(input,select,textarea),.hc-content :is(input,select,textarea),.page-content :is(input,select,textarea) { font-size:16px; }
+  .app-shell > .sidebar { position:fixed; left:0; top:0; bottom:0; width:min(84vw,310px); height:100dvh; transform:translateX(-105%); z-index:80; }
+  .app-shell > .sidebar.mobile-open { transform:translateX(0); }
+  .app-shell .sidebar-close { display:inline-grid!important; }
+  .app-shell .mobile-menu-button { display:inline-flex; }
+  .hc-mobile-menu-button { display:flex; }
+  .hc-topbar-spacer::before { content:"Hoiku Color"; }
+  .hc-mobile-drawer { max-height:100dvh; overflow-y:auto; }
+}
+
+.hm-admin-shell aside li { list-style:none; }
+.hm-admin-shell aside nav > div { margin:0; }
+.hm-admin-shell aside nav > div > div > :is(a,button) { min-height:44px; padding:6px 12px; }
+.hm-admin-shell aside nav > div > div > :is(a,button) > span:first-child { gap:10px; }
+.hm-admin-shell aside nav > div > div > :is(a,button) span.w-8 { width:24px; height:24px; background:transparent; }
+@media(max-width:900px) {
+ .hc-mobile-nav button { display:grid; place-items:center; align-content:center; gap:3px; border:0; border-radius:10px; background:transparent; color:#657184; font-size:10px; }
+ .hc-mobile-nav button.active { color:#d8244b; background:#fff1f4; }
+ .hc-mobile-drawer-backdrop { position:fixed; inset:0; z-index:100; display:flex; justify-content:flex-end; background:rgb(20 25 35 / 35%); }
+ .hc-mobile-drawer { width:min(320px,86vw); height:100%; padding:16px; background:white; }
+ .hc-mobile-drawer header { height:52px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--poppy-border); }
+ .hc-mobile-drawer header img { width:126px; }
+ .hc-mobile-drawer header button { width:44px; height:44px; border:1px solid var(--poppy-border); border-radius:9px; background:white; }
+ .hc-mobile-menu-list .poppy-service { height:auto; min-height:64px; padding:10px; }
+ .finance-mobile-tab { min-width:0; border:0; background:transparent; border-radius:10px; color:#657184; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10px; }
+ .finance-mobile-tab.active { color:#1769aa; background:#eaf3fb; }
+ .hm-bottom-nav,.finance-mobile-bottom-nav,.hc-mobile-nav { border-radius:27px!important; padding:6px; }
+}

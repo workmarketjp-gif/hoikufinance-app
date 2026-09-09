@@ -1,3 +1,4 @@
+import { PoppyServices } from "./poppy/PoppyServices";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   ArrowDownRight,
@@ -198,17 +199,10 @@ function AppShell() {
               })}
             </div>
           ))}
+          <PoppyServices current="finance" />
         </nav>
 
-        <div className="service-switcher">
-          <div className="nav-group-label">Hoiku Grove</div>
-          <div className="service-grid">
-            <a href="https://hoikuoffice.jp" target="_blank" rel="noreferrer" className="service-chip service-office"><span>HO</span><small>Office</small></a>
-            <a href="https://hoiku-market.jp" target="_blank" rel="noreferrer" className="service-chip service-market"><span>HM</span><small>Market</small></a>
-            <button type="button" className="service-chip service-color"><span>HC</span><small>Color</small></button>
-            <button type="button" className="service-chip service-finance active"><span>HF</span><small>Finance</small></button>
-          </div>
-        </div>
+
 
         <div className="sidebar-user">
           <div className="avatar">管</div>
