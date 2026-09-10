@@ -22,6 +22,7 @@ import {
   approveBudgetSpend,
   closeBudgetPeriod,
   createBudgetSpend,
+  ensureBudgetPeriod,
   listBudgetSpends,
   listBudgetSummary,
   rejectBudgetSpend,
@@ -86,6 +87,9 @@ function messageFromError(caught: unknown) {
   if (raw.includes("budget_approval_forbidden")) return "この金額はあなたの承認権限を超えています。本部承認が必要です。";
   if (raw.includes("accounting_period_closed")) return "会計月が締め済みのため、会計へ反映できません。";
   if (raw.includes("budget_pending_spends_exist")) return "承認待ちの支出があるため、月を締められません。";
+  if (raw.includes("budget_previous_period_missing")) return "前月までの予算期間に未処理の月があります。古い月から順番に締めてください。";
+  if (raw.includes("budget_previous_period_open")) return "前月の予算が未締めです。前月を先に締めてください。";
+  if (raw.includes("budget_next_period_already_closed") || raw.includes("budget_later_period_already_closed")) return "後の月がすでに締め済みのため、この月を後から締めることはできません。";
   if (raw.includes("forbidden") || raw.includes("42501")) return "この操作を行う権限がありません。";
   return raw || "処理に失敗しました。";
 }
@@ -240,11 +244,12 @@ export default function BudgetPage() {
   };
 
   const closePeriod = async (row: BudgetSummary) => {
-    if (!row.periodId || !window.confirm(`${row.name}の${yearMonth}予算を締めますか？ 未使用額は設定に従って翌月へ繰り越されます。`)) return;
+    if (!window.confirm(`${row.name}の${yearMonth}予算を締めますか？ 未使用額は設定に従って翌月へ繰り越されます。`)) return;
     setSaving(true);
     setError("");
     try {
-      const carry = await closeBudgetPeriod(row.periodId);
+      const periodId = row.periodId ?? await ensureBudgetPeriod(row.categoryId, yearMonth);
+      const carry = await closeBudgetPeriod(periodId);
       setNotice(`${row.name}を締めました。繰越額は${yen(carry)}です。`);
       await refresh();
     } catch (caught) {
@@ -336,7 +341,7 @@ export default function BudgetPage() {
                     <div className="budget-breakdown"><span>今月 {yen(budget.allocatedAmount)}</span><span>繰越 {yen(budget.carryoverIn)}</span><span>使用 {yen(budget.spentAmount)}</span><span>申請中 {yen(budget.submittedAmount)}</span></div>
                     <div className="budget-rule"><CircleAlert size={14} />園長承認上限: 1件 {yen(budget.approvalLimit)}</div>
                     {session.canManageFacilityBudget && budget.periodStatus !== "closed" && <button className="budget-spend-button" onClick={() => openSpend(budget.categoryId)}><Plus size={16} />この予算から支出を申請</button>}
-                    {session.canManageFacilityBudget && budget.periodId && budget.periodStatus === "open" && <button className="budget-close-button" onClick={() => void closePeriod(budget)}>この月を締める</button>}
+                    {session.canManageFacilityBudget && budget.periodStatus !== "closed" && <button className="budget-close-button" onClick={() => void closePeriod(budget)}>この月を締める</button>}
                   </article>
                 );
               })}
