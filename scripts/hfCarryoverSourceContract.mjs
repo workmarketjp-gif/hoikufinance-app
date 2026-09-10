@@ -33,5 +33,24 @@ if (
   throw new Error("Finance period config contract must remain SECURITY INVOKER.");
 }
 
+const privilegedIntegrityMigration = readFileSync(
+  new URL("../supabase/migrations/20260910022000_separate_public_build_contracts_from_privileged_integrity_contracts.sql", import.meta.url),
+  "utf8"
+);
+for (const required of [
+  "hf_budget_accounting_build_contract",
+  "hf_budget_carryover_build_contract",
+  "security invoker",
+  "revoke execute on function public.hf_budget_accounting_integrity_contract() from public, anon, authenticated",
+  "revoke execute on function public.hf_budget_carryover_integrity_contract() from public, anon, authenticated",
+  "grant execute on function public.hf_budget_accounting_integrity_contract() to service_role",
+  "grant execute on function public.hf_budget_carryover_integrity_contract() to service_role",
+]) {
+  if (!privilegedIntegrityMigration.toLowerCase().includes(required.toLowerCase())) {
+    throw new Error(`Finance integrity privilege migration is missing guard: ${required}`);
+  }
+}
+
 console.log("Finance carryover source contract: passed");
 console.log("Finance period catalog contract invoker-security source guard: passed");
+console.log("Finance live-data integrity diagnostics service-role-only source guard: passed");
