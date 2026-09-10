@@ -150,6 +150,15 @@ export async function rejectBudgetSpend(spendId: string, reason: string) {
   if (error) throw error;
 }
 
+export async function ensureBudgetPeriod(categoryId: string, yearMonth: string) {
+  const { data, error } = await getSupabaseClient().rpc("hf_ensure_budget_period", {
+    p_category_id: categoryId,
+    p_year_month: monthStart(yearMonth),
+  });
+  if (error) throw error;
+  return String(data);
+}
+
 export async function closeBudgetPeriod(periodId: string) {
   const { data, error } = await getSupabaseClient().rpc("hf_close_budget_period", { p_period_id: periodId });
   if (error) throw error;
