@@ -14,5 +14,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Guard Hoiku Finance carryover integrity
+        run: |
+          MIGRATION='supabase/migrations/20260910004500_hf_carryover_chain_integrity.sql'
+          grep -Fq 'budget_previous_period_open' "$MIGRATION"
+          grep -Fq 'budget_next_period_already_closed' "$MIGRATION"
+          grep -Fq 'carryover_in = v_next_carry' "$MIGRATION"
+          grep -Fq 'hf_budget_carryover_integrity_contract' "$MIGRATION"
       - run: npm install
       - run: npm run build
